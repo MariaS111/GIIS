@@ -6,6 +6,10 @@ from PyQt5.QtCore import Qt, QRectF
 from math import fabs, floor
 
 
+def convertY(y):
+    return -(y - 250) + 250
+
+
 def sign(x):
     rez = 0 if x == 0 else 1 if x > 0 else -1
     return rez
@@ -25,14 +29,14 @@ class LineDrawer:
 
         image.setPixelColor(floor(x), floor(y), QColor(0, 0, 0))
         print(x - 500, -y + 250)
-        print(floor(x-500), floor(-y+250))
+        print(floor(x - 500), floor(-y + 250))
 
-        for _ in range(steps-1):
+        for _ in range(steps - 1):
             print(f'Step - {_ + 1}')
             x += x_increment
             y += y_increment
             print(f'X - {x - 500}')
-            print(f'Y - {-y+250}')
+            print(f'Y - {-y + 250}')
             print(f'Plot - ({floor(x - 500)},{floor(-y + 250)})')
             image.setPixelColor(floor(x), floor(y), QColor(0, 0, 0))
 
@@ -44,29 +48,38 @@ class LineDrawer:
     def draw_line_bresenham(x1, y1, x2, y2, image, pixmap_item):
         dx = x2 - x1
         dy = y2 - y1
-        x_increment = 1 if dx > 0 else -1
-        y_increment = 1 if dy > 0 else -1
-        dx = fabs(dx)
-        dy = fabs(dy)
+
+        sign_x = 1 if dx > 0 else -1 if dx < 0 else 0
+        sign_y = 1 if dy > 0 else -1 if dy < 0 else 0
+
+        if dx < 0: dx = -dx
+        if dy < 0: dy = -dy
 
         if dx > dy:
-            p = 2 * dy - dx
-            y = y1
-            for x in range(x1, x2, x_increment):
-                image.setPixelColor(floor(x), floor(y), QColor(0, 0, 0))
-                if p >= 0:
-                    y += y_increment
-                    p -= 2 * dx
-                p += 2 * dy
+            pdx, pdy = sign_x, 0
+            es, el = dy, dx
         else:
-            p = 2 * dx - dy
-            x = x1
-            for y in range(y1, y2, y_increment):
-                image.setPixelColor(floor(x), floor(y), QColor(0, 0, 0))
-                if p >= 0:
-                    x += x_increment
-                    p -= 2 * dy
-                p += 2 * dx
+            pdx, pdy = 0, sign_y
+            es, el = dx, dy
+
+        x, y = x1, y1
+
+        error, t = el / 2, 0
+
+        image.setPixelColor(x, convertY(y), QColor(0, 0, 0))
+
+        while t < el:
+            error -= es
+            if error < 0:
+                error += el
+                x += sign_x
+                y += sign_y
+            else:
+                x += pdx
+                y += pdy
+            t += 1
+            image.setPixelColor(x, convertY(y), QColor(0, 0, 0))
+
         pixmap = QPixmap.fromImage(image)
         pixmap_item.setPixmap(pixmap)
 
@@ -150,9 +163,9 @@ class MainWindow(QMainWindow):
         selected_algorithm = self.algorithm_combo.currentText()
         # print(x1, x2, y1, y2)
         if selected_algorithm == 'ЦДА':
-            LineDrawer.draw_line_cda(x1+500, -y1+250, x2+500, -y2+250, self.image, self.pixmap_item)
+            LineDrawer.draw_line_cda(x1 + 500, -y1 + 250, x2 + 500, -y2 + 250, self.image, self.pixmap_item)
         elif selected_algorithm == 'Брезенхем':
-            LineDrawer.draw_line_bresenham(x1+500, -y1+250, x2+500, -y2+250, self.image, self.pixmap_item)
+            LineDrawer.draw_line_bresenham(x1 + 500, y1 + 250, x2 + 500, y2 + 250, self.image, self.pixmap_item)
 
     def clear_scene(self):
         pass
