@@ -13,7 +13,7 @@ def sign(x):
 
 class LineDrawer:
     @staticmethod
-    def draw_line_cda(scene, x1, y1, x2, y2, image, pixmap, pixmap_item):
+    def draw_line_cda(x1, y1, x2, y2, image, pixmap_item):
         dx = x2 - x1
         dy = y2 - y1
         steps = int(fabs(dx) if fabs(dx) > fabs(dy) else fabs(dy))
@@ -28,12 +28,12 @@ class LineDrawer:
         print(floor(x-500), floor(-y+250))
 
         for _ in range(steps-1):
-            print(_)
+            print(f'Step - {_ + 1}')
             x += x_increment
             y += y_increment
-            print(x-500, -y+250)
-            print(floor(x - 500), floor(-y + 250))
-
+            print(f'X - {x - 500}')
+            print(f'Y - {-y+250}')
+            print(f'Plot - ({floor(x - 500)},{floor(-y + 250)})')
             image.setPixelColor(floor(x), floor(y), QColor(0, 0, 0))
 
         pixmap = QPixmap.fromImage(image)
@@ -41,7 +41,7 @@ class LineDrawer:
         print('----------------------------')
 
     @staticmethod
-    def draw_line_bresenham(scene, x1, y1, x2, y2):
+    def draw_line_bresenham(x1, y1, x2, y2, image, pixmap_item):
         dx = x2 - x1
         dy = y2 - y1
         x_increment = 1 if dx > 0 else -1
@@ -53,7 +53,7 @@ class LineDrawer:
             p = 2 * dy - dx
             y = y1
             for x in range(x1, x2, x_increment):
-                scene.addLine(x, y, x, y, QPen(Qt.black))
+                image.setPixelColor(floor(x), floor(y), QColor(0, 0, 0))
                 if p >= 0:
                     y += y_increment
                     p -= 2 * dx
@@ -62,11 +62,13 @@ class LineDrawer:
             p = 2 * dx - dy
             x = x1
             for y in range(y1, y2, y_increment):
-                scene.addLine(x, y, x, y, QPen(Qt.black))
+                image.setPixelColor(floor(x), floor(y), QColor(0, 0, 0))
                 if p >= 0:
                     x += x_increment
                     p -= 2 * dy
                 p += 2 * dx
+        pixmap = QPixmap.fromImage(image)
+        pixmap_item.setPixmap(pixmap)
 
     @staticmethod
     def draw_wu(self):
@@ -95,10 +97,6 @@ class MainWindow(QMainWindow):
         self.clear_button.move(280, 10)
         self.clear_button.clicked.connect(self.clear_scene)
 
-        self.debug_button = QPushButton('Debug', self)
-        self.debug_button.move(410, 10)
-        self.debug_button.clicked.connect(self.debug)
-
         self.view = QGraphicsView(self)
         # self.view = CoordinateGrid(self)
         self.view.setGeometry(10, 50, 1380, 700)
@@ -112,9 +110,6 @@ class MainWindow(QMainWindow):
         self.image = QImage(image_width, image_height, QImage.Format_RGB32)
         self.image.fill(QColor(255, 255, 255))
 
-        x_pixel = 10
-        y_pixel = 20
-        self.image.setPixelColor(x_pixel, y_pixel, QColor(0, 0, 0))
         gray_color = QColor(200, 200, 200)
 
         for x in range(image_width):
@@ -144,25 +139,22 @@ class MainWindow(QMainWindow):
             second_point, ok = QInputDialog.getText(self, 'Input', 'Enter coordinates for the second point (x, y):')
             if ok:
                 first_coordinates = [int(coord) for coord in first_point.split()]
-                first_coordinates[0] = min(690, max(-690, first_coordinates[0]))
-                first_coordinates[1] = min(350, max(-350, first_coordinates[1]))
+                first_coordinates[0] = min(500, max(-500, first_coordinates[0]))
+                first_coordinates[1] = min(250, max(-250, first_coordinates[1]))
                 second_coordinates = [int(coord) for coord in second_point.split()]
-                second_coordinates[0] = min(690, max(-690, second_coordinates[0]))
-                second_coordinates[1] = min(350, max(-350, second_coordinates[1]))
+                second_coordinates[0] = min(500, max(-500, second_coordinates[0]))
+                second_coordinates[1] = min(250, max(-250, second_coordinates[1]))
                 self.draw_line(*first_coordinates, *second_coordinates)
 
     def draw_line(self, x1, y1, x2, y2):
         selected_algorithm = self.algorithm_combo.currentText()
         # print(x1, x2, y1, y2)
         if selected_algorithm == 'ЦДА':
-            LineDrawer.draw_line_cda(self.scene, x1+500, -y1+250, x2+500, -y2+250, self.image, self.pixmap, self.pixmap_item)
+            LineDrawer.draw_line_cda(x1+500, -y1+250, x2+500, -y2+250, self.image, self.pixmap_item)
         elif selected_algorithm == 'Брезенхем':
-            LineDrawer.draw_line_bresenham(self.scene, x1, -y1, x2, -y2)
+            LineDrawer.draw_line_bresenham(x1+500, -y1+250, x2+500, -y2+250, self.image, self.pixmap_item)
 
     def clear_scene(self):
-        pass
-
-    def debug(self):
         pass
 
 
