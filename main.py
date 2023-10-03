@@ -52,8 +52,10 @@ class LineDrawer:
         sign_x = 1 if dx > 0 else -1 if dx < 0 else 0
         sign_y = 1 if dy > 0 else -1 if dy < 0 else 0
 
-        if dx < 0: dx = -dx
-        if dy < 0: dy = -dy
+        if dx < 0:
+            dx = -dx
+        if dy < 0:
+            dy = -dy
 
         if dx > dy:
             pdx, pdy = sign_x, 0
